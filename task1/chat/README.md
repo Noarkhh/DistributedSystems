@@ -1,4 +1,1 @@
-# Chat
-
-**TODO: Add description**
-
+# Simple chat application using sockets
