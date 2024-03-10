@@ -16,7 +16,8 @@ defmodule Chat.Client.Connection do
 
   @impl true
   def init({server_address, server_port}) do
-    {:ok, connected_tcp_socket} = :gen_tcp.connect(server_address, server_port, mode: :binary)
+    connected_tcp_socket = connect_to_server(server_address, server_port)
+
     {:ok, {_address, port}} = :inet.sockname(connected_tcp_socket)
     {:ok, udp_socket} = :gen_udp.open(port, mode: :binary)
 
@@ -97,6 +98,9 @@ defmodule Chat.Client.Connection do
   @impl true
   def handle_cast({:send, message, nickname, :multicast}, state) do
     :ok =
+      :inet.setopts(state.multicast_socket, drop_membership: {@multicast_address, {0, 0, 0, 0}})
+
+    :ok =
       :gen_udp.send(
         state.udp_socket,
         @multicast_address,
@@ -104,6 +108,22 @@ defmodule Chat.Client.Connection do
         "#{nickname}:\n#{message}"
       )
 
+    :ok =
+      :inet.setopts(state.multicast_socket, add_membership: {@multicast_address, {0, 0, 0, 0}})
+
     {:noreply, state}
+  end
+
+  defp connect_to_server(server_address, server_port, retry_timeout \\ 1000) do
+    case :gen_tcp.connect(server_address, server_port, mode: :binary) do
+      {:ok, socket} ->
+        IO.write("Server connection established\n> ")
+        socket
+
+      {:error, :econnrefused} ->
+        IO.puts("Server connection failed, retrying in #{retry_timeout}ms...")
+        Process.sleep(retry_timeout)
+        connect_to_server(server_address, server_port, retry_timeout + 1000)
+    end
   end
 end

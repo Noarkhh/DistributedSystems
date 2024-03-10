@@ -5,6 +5,7 @@ defmodule Chat.Server.ConnectionManager do
 
   alias Chat.Server.Connection
 
+  @spec start_link(any()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
@@ -28,17 +29,11 @@ defmodule Chat.Server.ConnectionManager do
     Logger.info("Received supervisor #{inspect(supervisor)}")
 
     state = %{state | supervisor: supervisor}
-    accept_connections(state)
-    {:noreply, state}
+    {:noreply, state, {:continue, %{}}}
   end
 
   @impl true
-  def terminate(_reason, state) do
-    Logger.info("Closing listening TCP socket")
-    :gen_tcp.close(state.listening_tcp_socket)
-  end
-
-  defp accept_connections(state) do
+  def handle_continue(continue_arg, state) do
     %{listening_tcp_socket: listening_tcp_socket, supervisor: supervisor} = state
     {:ok, connected_tcp_socket} = :gen_tcp.accept(listening_tcp_socket)
 
@@ -66,7 +61,13 @@ defmodule Chat.Server.ConnectionManager do
 
     GenServer.cast(new_connection_pid, {:tcp_socket, connected_tcp_socket})
 
-    accept_connections(state)
+    {:noreply, state, {:continue, continue_arg}}
+  end
+
+  @impl true
+  def terminate(_reason, state) do
+    Logger.info("Closing listening TCP socket")
+    :gen_tcp.close(state.listening_tcp_socket)
   end
 
   defp get_new_connection_child_spec(id) do

@@ -22,7 +22,7 @@ defmodule Chat.Client.CLI do
 
   defp process_input(input, nickname, mode \\ :tcp) do
     case input do
-      "Q" -> Application.stop(:client)
+      "Q" -> :init.stop(0)
       "U" -> get_input(:udp) |> process_input(nickname, :udp)
       "M" -> get_input(:multicast) |> process_input(nickname, :multicast)
       "" -> :ok
