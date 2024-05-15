@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Enter your birth date</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"><!-- Including Bootstrap for styling -->
+        <style> /* Inline CSS for centering form */
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #f8f9fa;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <form id="birthdateForm">
+                <div class="form-group">
+                    <label for="birthdate">Enter a date:</label>
+                    <input type="date" class="form-control" id="birthdate" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+
+        <script>
+            document.getElementById('birthdateForm').addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent form from submitting normally
+                var birthdate = document.getElementById('birthdate').value;
+
+                // Redirect directly to your service
+                window.location.href = `http://localhost:8008/date?date=${birthdate}`;
+
+            });
+        </script>
+    </body>
+</html>
