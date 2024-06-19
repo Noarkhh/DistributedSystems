@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package mpeg_standard_notifier;
+
+service MPEGStandardNotifier {
+    rpc SubscribeForStandards(StandardSubscription) returns (stream Standard);
+}
+
+message StandardSubscription {
+    repeated MediaType media_types = 1;
+    oneof condition {
+        int32 mpeg_part = 2;
+        int32 standard_part = 3;
+        int32 edition = 4;
+        string cooperator = 5;
+    }
+}
+
+message Standard {
+    int32 mpeg_part = 1;
+    int32 standard_part = 2;
+    MediaType media_type = 3;
+    int32 iso_iec_standard_series_number = 4;
+    int32 edition = 5;
+    string title = 6;
+    repeated string cooperators = 7;
+}
+
+enum MediaType {
+    Audio = 0;
+    Video = 1;
+    Scent = 2;
+    Flavour = 3;
+    Tactile = 4;
+}
